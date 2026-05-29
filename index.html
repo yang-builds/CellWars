@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>细胞大作战 - 工作细胞守护生命之旅</title>
+  <meta name="description" content="一款以《工作细胞》动画为背景的少儿科普卡牌对战游戏，选择你的免疫细胞，击败入侵体内的有害细菌！">
+  <link rel="stylesheet" href="style.css">
+  <!-- 引入 Outfit 和 Inter 字体 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;600;800&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- 主游戏容器 -->
+  <div id="game-container">
+    
+    <!-- ================= 1. 欢迎主界面 ================= -->
+    <section id="screen-welcome" class="game-screen active">
+      <div class="welcome-content">
+        <div class="logo-area">
+          <h1 class="game-title">细胞大作战</h1>
+          <p class="game-subtitle">Cells at Work · 体内守护者</p>
+        </div>
+        <div class="blood-vessel-decor">
+          <div class="bubble red-cell-decor"></div>
+          <div class="bubble white-cell-decor"></div>
+          <div class="bubble platelet-decor"></div>
+        </div>
+        <button id="btn-start-game" class="btn btn-primary pulse-effect">
+          <span class="btn-text">开启守护之旅</span>
+          <span class="btn-glow"></span>
+        </button>
+        <p class="author-credits">致敬《工作细胞》· 小小设计师杨屿杨创意呈现</p>
+      </div>
+    </section>
+
+    <!-- ================= 2. 角色选择界面 ================= -->
+    <section id="screen-select" class="game-screen hidden">
+      <div class="screen-header">
+        <h2>选择你的守护细胞</h2>
+        <p>每个细胞在体内都有独特的工作，挑选一个开始战斗吧！</p>
+      </div>
+      
+      <div class="select-container">
+        <!-- 细胞选择网格 -->
+        <div class="cell-grid" id="player-cell-grid">
+          <!-- 细胞卡牌将通过 JS 动态生成，以确保数据的一致性 -->
+        </div>
+
+        <!-- 细胞详情面板 -->
+        <div class="details-panel" id="cell-details-panel">
+          <div class="details-placeholder">
+            <p>点击左侧卡牌查看细胞的绝招和详细故事</p>
+          </div>
+          <div class="details-content hidden" id="cell-details-content">
+            <h3 id="detail-name">细胞名称</h3>
+            <span class="badge" id="detail-role">工作职责</span>
+            <p class="desc" id="detail-desc">细胞在身体里的故事背景描述...</p>
+            
+            <div class="stat-bars">
+              <div class="stat-row">
+                <span class="stat-label">攻击力</span>
+                <div class="progress-container">
+                  <div class="progress-bar atk-bar" id="bar-atk" style="width: 0%"></div>
+                </div>
+                <span class="stat-value" id="val-atk">0</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">防御力</span>
+                <div class="progress-container">
+                  <div class="progress-bar def-bar" id="bar-def" style="width: 0%"></div>
+                </div>
+                <span class="stat-value" id="val-def">0</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">移速/攻速</span>
+                <div class="progress-container">
+                  <div class="progress-bar spd-bar" id="bar-spd" style="width: 0%"></div>
+                </div>
+                <span class="stat-value" id="val-spd">0</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">辅助支援</span>
+                <div class="progress-container">
+                  <div class="progress-bar sup-bar" id="bar-sup" style="width: 0%"></div>
+                </div>
+                <span class="stat-value" id="val-sup">0</span>
+              </div>
+            </div>
+
+            <div class="skill-info">
+              <h4>专属技能</h4>
+              <p id="detail-skill-desc">技能效果说明</p>
+            </div>
+            
+            <button id="btn-confirm-cell" class="btn btn-success" disabled>确认守护者</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 3. 关卡选择界面 ================= -->
+    <section id="screen-map" class="game-screen hidden">
+      <div class="screen-header">
+        <div class="header-nav">
+          <button id="btn-back-to-select" class="btn-back">← 更换细胞</button>
+          <div class="player-avatar-mini" id="map-player-badge">
+            <span class="avatar-icon">🛡️</span>
+            <div class="player-info-text">
+              <span class="player-name" id="map-player-name">红细胞</span>
+              <span class="player-level" id="map-player-level">等级: 1 (0/100 EXP)</span>
+            </div>
+          </div>
+        </div>
+        <h2>体内血管巡逻地图</h2>
+        <p>红血球警报！前方发现病菌入侵，请选择巡逻地点消灭细菌！</p>
+      </div>
+
+      <div class="map-container">
+        <!-- 血管背景与关卡路径 -->
+        <svg class="map-path-svg" xmlns="http://www.w3.org/2000/svg">
+          <path id="svg-map-line" d="" fill="none" stroke="rgba(255, 75, 75, 0.2)" stroke-width="6" stroke-dasharray="10 8" />
+        </svg>
+
+        <div class="levels-grid" id="levels-container">
+          <!-- 6个细菌关卡卡牌将由 JS 动态生成 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 4. 战斗竞技场界面 ================= -->
+    <section id="screen-battle" class="game-screen hidden">
+      <!-- 战斗背景特效 -->
+      <div class="battle-bg-effects">
+        <div class="laser-line"></div>
+      </div>
+
+      <div class="battle-header">
+        <button id="btn-escape" class="btn btn-danger-outline">撤退</button>
+        <div class="battle-title-area">
+          <h3 id="battle-stage-title">第 1 关: 绿脓杆菌遭遇战</h3>
+        </div>
+        <div class="round-counter">回合 <span id="val-round-num">1</span></div>
+      </div>
+
+      <!-- 战斗对决区 -->
+      <div class="battle-arena">
+        <!-- 玩家方 -->
+        <div class="arena-side player-side" id="card-player-container">
+          <div class="combat-card" id="battle-player-card">
+            <div class="card-inner">
+              <div class="card-glow"></div>
+              <div class="card-avatar" id="battle-player-avatar">🛡️</div>
+              <h3 id="battle-player-name">中性粒细胞</h3>
+              <div class="level-tag">LV.<span id="battle-player-lv">1</span></div>
+              
+              <!-- 血条与护盾条 -->
+              <div class="combat-bars">
+                <div class="hp-info">
+                  <span>生命值</span>
+                  <span id="battle-player-hp-txt">150 / 150</span>
+                </div>
+                <div class="progress-container hp-container">
+                  <div class="progress-bar hp-bar" id="battle-player-hp-bar" style="width: 100%"></div>
+                  <div class="progress-bar shield-bar" id="battle-player-shield-bar" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- 状态词条 -->
+              <div class="status-buffs" id="battle-player-buffs">
+                <!-- <span class="badge badge-buff">🗡️ 攻击提升</span> -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 核心对决区 -->
+        <div class="arena-center">
+          <div class="vs-badge">VS</div>
+        </div>
+
+        <!-- 敌人方 -->
+        <div class="arena-side enemy-side" id="card-enemy-container">
+          <div class="combat-card enemy-card" id="battle-enemy-card">
+            <div class="card-inner">
+              <div class="card-glow"></div>
+              <div class="card-avatar" id="battle-enemy-avatar">👾</div>
+              <h3 id="battle-enemy-name">绿脓杆菌</h3>
+              <div class="level-tag bg-enemy-tag">敌方</div>
+              
+              <!-- 血条与护盾条 -->
+              <div class="combat-bars">
+                <div class="hp-info">
+                  <span>生命值</span>
+                  <span id="battle-enemy-hp-txt">120 / 120</span>
+                </div>
+                <div class="progress-container hp-container">
+                  <div class="progress-bar hp-bar enemy-hp" id="battle-enemy-hp-bar" style="width: 100%"></div>
+                  <div class="progress-bar shield-bar" id="battle-enemy-shield-bar" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- 状态词条 -->
+              <div class="status-buffs" id="battle-enemy-buffs"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 战斗交互面板 -->
+      <div class="battle-control-panel">
+        <!-- 战斗操作按钮 -->
+        <div class="control-actions">
+          <button id="btn-atk" class="action-btn card-btn-primary">
+            <span class="action-icon">🗡️</span>
+            <span class="action-name">普通攻击</span>
+            <span class="action-desc" id="desc-atk">物理打击</span>
+          </button>
+          
+          <button id="btn-def" class="action-btn card-btn-secondary">
+            <span class="action-icon">🛡️</span>
+            <span class="action-name">战术防御</span>
+            <span class="action-desc">下回合减伤50%</span>
+          </button>
+          
+          <button id="btn-skill" class="action-btn card-btn-accent">
+            <span class="action-icon">⚡</span>
+            <span class="action-name">专属技能</span>
+            <span class="action-desc" id="desc-skill">独特招式</span>
+          </button>
+          
+          <button id="btn-support" class="action-btn card-btn-support">
+            <span class="action-icon">✨</span>
+            <span class="action-name">辅助支援</span>
+            <span class="action-desc" id="desc-support">恢复或召唤协助</span>
+          </button>
+        </div>
+
+        <!-- 战斗日志 -->
+        <div class="battle-log-area">
+          <div class="log-header">💡 战斗日志</div>
+          <div class="log-lines" id="battle-log-lines">
+            <div class="log-line system-line">战斗开始！巡逻遇到了绿脓杆菌！</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 5. 弹窗与模态框 (Modals) ================= -->
+    <!-- 战斗胜利弹窗 -->
+    <div id="modal-victory" class="modal-overlay hidden">
+      <div class="modal-content victory-card">
+        <div class="modal-glow-success"></div>
+        <div class="modal-icon">🏆</div>
+        <h2>挑战胜利！</h2>
+        <p>你成功消灭了入侵的病菌，身体恢复了安全！</p>
+        
+        <div class="victory-rewards">
+          <div class="reward-item">
+            <span class="reward-title">获得经验值</span>
+            <span class="reward-value" id="reward-exp">+100 EXP</span>
+          </div>
+          
+          <!-- 升级提示区 -->
+          <div class="level-up-alert hidden" id="lvl-up-box">
+            <div class="lvl-up-title">🎉 等级提升 (LEVEL UP!)</div>
+            <div class="lvl-up-stats">
+              <div>生命上限: <span id="txt-up-hp">+20</span></div>
+              <div>攻击力: <span id="txt-up-atk">+6</span></div>
+              <div>防御力: <span id="txt-up-def">+5</span></div>
+            </div>
+          </div>
+        </div>
+
+        <button id="btn-victory-confirm" class="btn btn-success font-bold">返回巡逻地图</button>
+      </div>
+    </div>
+
+    <!-- 战斗失败弹窗 -->
+    <div id="modal-defeat" class="modal-overlay hidden">
+      <div class="modal-content defeat-card">
+        <div class="modal-glow-fail"></div>
+        <div class="modal-icon">💀</div>
+        <h2>战斗失败...</h2>
+        <p>守护细胞已经耗尽了体力，细菌正在繁殖！</p>
+        
+        <div class="defeat-tips">
+          <p class="tip-title">💡 战斗小贴士:</p>
+          <p id="defeat-tip-text">红细胞可以通过“氧气输送”回复生命，血小板可以使用“纤维蛋白屏障”抵挡高额伤害哦！</p>
+        </div>
+
+        <div class="modal-buttons">
+          <button id="btn-retry" class="btn btn-primary">重新挑战</button>
+          <button id="btn-give-up" class="btn btn-danger-outline">返回地图</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 游戏完美通关弹窗 -->
+    <div id="modal-gameclear" class="modal-overlay hidden">
+      <div class="modal-content gameclear-card">
+        <div class="modal-glow-clear"></div>
+        <div class="modal-icon-large">💖</div>
+        <h2>恭喜！全身体彻底康复！</h2>
+        <p>你击败了最强大的“癌细胞”，身体里的万亿细胞都在为你欢呼！</p>
+        
+        <div class="clear-summary">
+          <p>你使用的守护者: <strong id="clear-cell-name">中性粒细胞</strong></p>
+          <p>最终成长等级: <strong id="clear-cell-lv">LV.5</strong></p>
+          <div class="kid-badge">🏅 颁发“体内健康小卫士”勋章</div>
+        </div>
+
+        <button id="btn-restart-all" class="btn btn-success">再次开启大冒险</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 引入游戏逻辑 -->
+  <script src="app.js"></script>
+</body>
+</html>
